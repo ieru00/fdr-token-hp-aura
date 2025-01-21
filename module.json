@@ -1,7 +1,7 @@
 {
   "id": "token-health-aura",
   "title": "Token Health Aura",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": {
     "minimum": "12",
     "verified": "12",
@@ -26,7 +26,7 @@
         "path": "languages/en.json"
       }
     ],
-  "description": "Tokens life will be dictate an aura around them, half life (bloodied), to quarter life (severly bloodied)",
+  "description": "Tokens life will be dictate an aura around them, based on user configured thresholds!",
   "authors": [
     {
       "name": "ieru00",
