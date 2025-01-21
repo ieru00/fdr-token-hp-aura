@@ -1,0 +1,37 @@
+{
+  "id": "token-health-aura",
+  "title": "Token Health Aura",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12",
+    "maximum": "12"
+  },
+  
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+    "esmodules": ["scripts/hpag.js"],
+    "styles": ["styles/hpag.css"],
+    "languages": [
+      {
+        "lang": "en",
+        "name": "English",
+        "path": "languages/en.json"
+      }
+    ],
+  "description": "Tokens life will be dictate an aura around them, half life (bloodied), to quarter life (severly bloodied)",
+  "authors": [
+    {
+      "name": "ieru00",
+      "flags": {}
+    }
+  ]
+  
+}

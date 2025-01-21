@@ -1,0 +1,63 @@
+<form>
+    <div class="form-group">
+        <label>Aura Type</label>
+        <select name="auraType">
+            {{#select settings.auraType}}
+            <option value="dim">Dim Light Aura</option>
+            <option value="bright">Bright Light Aura</option>
+            <option value="both">Both Dim & Bright</option>
+            {{/select}}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Half Health Color</label>
+        <div class="form-fields">
+            <input type="color" name="halfHealthColor" value="{{settings.halfHealthColor}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Quarter Health Color</label>
+        <div class="form-fields">
+            <input type="color" name="quarterHealthColor" value="{{settings.quarterHealthColor}}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Aura Opacity (0.1-0.3)</label>
+        <div class="form-fields">
+            <input type="range" name="auraAlpha" value="{{settings.auraAlpha}}" min="0.1" max="0.3" step="0.05">
+            <span class="range-value">{{settings.auraAlpha}}</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Dim Light Range (0-3)</label>
+        <div class="form-fields">
+            <input type="range" name="auraDim" value="{{settings.auraDim}}" min="0" max="3" step="0.5">
+            <span class="range-value">{{settings.auraDim}}</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Bright Light Range (0-2)</label>
+        <div class="form-fields">
+            <input type="range" name="auraBright" value="{{settings.auraBright}}" min="0" max="2" step="0.5">
+            <span class="range-value">{{settings.auraBright}}</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Enable Pulse Animation</label>
+        <div class="form-fields">
+            <input type="checkbox" name="enablePulse" {{#if settings.enablePulse}}checked{{/if}}>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <button type="submit">
+            <i class="far fa-save"></i> Save Settings
+        </button>
+    </div>
+</form>
