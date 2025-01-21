@@ -26,7 +26,7 @@
         "path": "languages/en.json"
       }
     ],
-  "description": "Tokens life will be dictate an aura around them, half life (bloodied), to quarter life (severly bloodied)",
+  "description": "Module that will place a small aura around tokens at varying thresholds of HP.",
   "authors": [
     {
       "name": "ieru00",

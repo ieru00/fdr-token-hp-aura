@@ -10,18 +10,30 @@
         </select>
     </div>
 
-    <div class="form-group">
-        <label>Half Health Color</label>
-        <div class="form-fields">
-            <input type="color" name="halfHealthColor" value="{{settings.halfHealthColor}}">
+    <div class="form-group thresholds-container">
+        <label>Health Thresholds</label>
+        <div class="thresholds-list">
+            {{#each settings.thresholds as |threshold index|}}
+            <div class="threshold-entry" data-index="{{index}}">
+                <div class="form-fields">
+                    <input type="number" name="thresholds.{{index}}.threshold" 
+                           value="{{threshold.threshold}}" min="1" max="99" step="1">
+                    <span>%</span>
+                    <input type="color" name="thresholds.{{index}}.color" 
+                           value="{{threshold.color}}">
+                    <button type="button" class="remove-threshold">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {{/each}}
         </div>
-    </div>
-
-    <div class="form-group">
-        <label>Quarter Health Color</label>
-        <div class="form-fields">
-            <input type="color" name="quarterHealthColor" value="{{settings.quarterHealthColor}}">
+        <div class="threshold-controls">
+            <button type="button" class="add-threshold">
+                <i class="fas fa-plus"></i> Add Threshold
+            </button>
         </div>
+        <p class="notes">Thresholds are checked from highest to lowest percentage. Add multiple thresholds to create a gradient effect.</p>
     </div>
 
     <div class="form-group">
@@ -61,3 +73,48 @@
         </button>
     </div>
 </form>
+
+<style>
+.threshold-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.threshold-entry .form-fields {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.threshold-entry input[type="number"] {
+    width: 60px;
+}
+
+.threshold-controls {
+    margin-top: 10px;
+}
+
+.notes {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.remove-threshold {
+    color: #aa0000;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-threshold {
+    background: #4a4;
+    color: white;
+    padding: 5px 10px;
+}
+</style>
