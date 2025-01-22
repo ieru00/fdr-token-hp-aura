@@ -12,6 +12,13 @@ class TokenHealthAura {
     both: "Both Dim & Bright",
   };
 
+  static ANIMATION_STYLES = {
+    none: "No Animation",
+    pulse: "Pulse",
+    flicker: "Flicker",
+    dynamic: "Dynamic (Based on Health)",
+  };
+
   static initialize() {
     this.registerSettings();
     this.hookTokenUpdates();
@@ -22,7 +29,6 @@ class TokenHealthAura {
   }
 
   static updateAllTokens() {
-    console.log(`${this.ID} | Updating all tokens after settings change`);
     canvas.scene?.tokens?.forEach((tokenDocument) => {
       if (tokenDocument.actor) {
         this.updateTokenAura(tokenDocument);
@@ -98,113 +104,87 @@ class TokenHealthAura {
 
   static hexToRgb(hex) {
     // Remove # if present
-    hex = hex.replace('#', '');
-    
+    hex = hex.replace("#", "");
+
     // Convert 3-digit hex to 6-digit
     if (hex.length === 3) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
-    
+
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-    
-    return { r, g, b };
-}
 
-static rgbToHex({ r, g, b }) {
+    return { r, g, b };
+  }
+
+  static rgbToHex({ r, g, b }) {
     const toHex = (n) => {
-        const hex = Math.round(n).toString(16);
-        return hex.length === 1 ? '0' + hex : hex;
+      const hex = Math.round(n).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
     };
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
+  }
 
-static interpolateColor(color1, color2, factor) {
+  static interpolateColor(color1, color2, factor) {
     const rgb1 = this.hexToRgb(color1);
     const rgb2 = this.hexToRgb(color2);
-    
+
     const r = rgb1.r + (rgb2.r - rgb1.r) * factor;
     const g = rgb1.g + (rgb2.g - rgb1.g) * factor;
     const b = rgb1.b + (rgb2.b - rgb1.b) * factor;
-    
-    return this.rgbToHex({ r, g, b });
-}
 
-static getGradientColor(healthPercentage, thresholds) {
-    console.group(`${this.ID} | Gradient Calculation Details`);
-    console.log(`Current Health: ${healthPercentage}%`);
-    console.log(`Available Thresholds:`, thresholds);
+    return this.rgbToHex({ r, g, b });
+  }
+
+  static getGradientColor(healthPercentage, thresholds) {
 
     // If no thresholds or only one threshold, return the single color
     if (!thresholds.length) {
-        console.log('No thresholds found, returning black');
-        console.groupEnd();
-        return "#000000";
+      return "#000000";
     }
     if (thresholds.length === 1) {
-        console.log('Only one threshold found, returning its color:', thresholds[0].color);
-        console.groupEnd();
-        return thresholds[0].color;
+      return thresholds[0].color;
     }
 
     // Sort thresholds from highest to lowest
     const sorted = [...thresholds].sort((a, b) => b.threshold - a.threshold);
-    console.log(`Sorted thresholds:`, sorted.map(t => `${t.threshold}% (${t.color})`));
 
     // If health is above highest threshold, return no color
     if (healthPercentage > sorted[0].threshold) {
-        console.log(`Health (${healthPercentage}%) is above highest threshold (${sorted[0].threshold}%), returning no color`);
-        console.groupEnd();
-        return "";
+      return "";
     }
 
     // If health is below lowest threshold, return that color
     if (healthPercentage <= sorted[sorted.length - 1].threshold) {
-        console.log(`Health (${healthPercentage}%) is below lowest threshold (${sorted[sorted.length - 1].threshold}%), returning lowest color: ${sorted[sorted.length - 1].color}`);
-        console.groupEnd();
-        return sorted[sorted.length - 1].color;
+      return sorted[sorted.length - 1].color;
     }
 
     // Find the two thresholds we're between
     for (let i = 0; i < sorted.length - 1; i++) {
-        const upperThreshold = sorted[i];
-        const lowerThreshold = sorted[i + 1];
+      const upperThreshold = sorted[i];
+      const lowerThreshold = sorted[i + 1];
 
-        console.log(`Checking if ${healthPercentage}% is between ${upperThreshold.threshold}% and ${lowerThreshold.threshold}%`);
+      if (
+        healthPercentage <= upperThreshold.threshold &&
+        healthPercentage > lowerThreshold.threshold
+      ) {
+        const range = upperThreshold.threshold - lowerThreshold.threshold;
+        const distanceFromUpper = upperThreshold.threshold - healthPercentage;
+        const factor = distanceFromUpper / range;
 
-        if (healthPercentage <= upperThreshold.threshold && 
-            healthPercentage > lowerThreshold.threshold) {
-            
-            const range = upperThreshold.threshold - lowerThreshold.threshold;
-            const distanceFromUpper = upperThreshold.threshold - healthPercentage;
-            const factor = distanceFromUpper / range;
+        const resultColor = this.interpolateColor(
+          upperThreshold.color,
+          lowerThreshold.color,
+          factor
+        );
 
-            console.log('Found matching threshold range!');
-            console.log(`Range between thresholds: ${range}%`);
-            console.log(`Distance from upper threshold: ${distanceFromUpper}%`);
-            console.log(`Interpolation factor: ${factor}`);
-            console.log(`Interpolating between colors:`, {
-                upper: upperThreshold.color,
-                lower: lowerThreshold.color
-            });
-
-            const resultColor = this.interpolateColor(
-                upperThreshold.color,
-                lowerThreshold.color,
-                factor
-            );
-            
-            console.log(`Calculated color: ${resultColor}`);
-            console.groupEnd();
-            return resultColor;
-        }
+        return resultColor;
+      }
     }
-
-    console.log(`No matching range found, returning highest threshold color: ${sorted[0].color}`);
-    console.groupEnd();
+    
     return sorted[0].color;
-}
+  }
 
   static registerSettings() {
     class TokenHealthAuraSettings extends FormApplication {
@@ -220,16 +200,29 @@ static getGradientColor(healthPercentage, thresholds) {
       }
 
       getData() {
-        const data = super.getData();
-        data.settings = {
-          auraType: game.settings.get(TokenHealthAura.ID, "auraType"),
-          thresholds: game.settings.get(TokenHealthAura.ID, "thresholds"),
-          auraAlpha: game.settings.get(TokenHealthAura.ID, "auraAlpha"),
-          auraDim: game.settings.get(TokenHealthAura.ID, "auraDim"),
-          auraBright: game.settings.get(TokenHealthAura.ID, "auraBright"),
-          enablePulse: game.settings.get(TokenHealthAura.ID, "enablePulse"),
+        return {
+          settings: {
+            auraType: game.settings.get(TokenHealthAura.ID, "auraType"),
+            thresholds: game.settings.get(TokenHealthAura.ID, "thresholds"),
+            auraAlpha: game.settings.get(TokenHealthAura.ID, "auraAlpha"),
+            auraDim: game.settings.get(TokenHealthAura.ID, "auraDim"),
+            auraBright: game.settings.get(TokenHealthAura.ID, "auraBright"),
+            enablePulse: game.settings.get(TokenHealthAura.ID, "enablePulse"),
+            animationStyle: game.settings.get(
+              TokenHealthAura.ID,
+              "animationStyle"
+            ),
+            dynamicOpacity: game.settings.get(
+              TokenHealthAura.ID,
+              "dynamicOpacity"
+            ),
+            flickerIntensity: game.settings.get(
+              TokenHealthAura.ID,
+              "flickerIntensity"
+            ),
+          },
+          animationStyles: TokenHealthAura.ANIMATION_STYLES,
         };
-        return data;
       }
 
       activateListeners(html) {
@@ -308,14 +301,16 @@ static getGradientColor(healthPercentage, thresholds) {
           );
         }
 
-        // Handle other settings including gmOnly
+        // Handle other settings
         const settingKeys = [
           "auraType",
           "auraAlpha",
           "auraDim",
           "auraBright",
           "enablePulse",
-          "gmOnly",
+          "animationStyle",
+          "dynamicOpacity",
+          "flickerIntensity",
         ];
         settingKeys.forEach((key) => {
           if (data[key] !== undefined) {
@@ -325,10 +320,10 @@ static getGradientColor(healthPercentage, thresholds) {
           }
         });
 
-        // After settings are saved, update all tokens to reflect changes
-        Promise.all(promises).then(() => TokenHealthAura.updateAllTokens());
-
-        return Promise.all(promises);
+        // After all settings are saved, update all tokens
+        return Promise.all(promises).then(() => {
+          TokenHealthAura.updateAllTokens();
+        });
       }
     }
 
@@ -423,6 +418,37 @@ static getGradientColor(healthPercentage, thresholds) {
       type: Boolean,
       default: false,
     });
+
+    game.settings.register(this.ID, "animationStyle", {
+      name: "Animation Style",
+      scope: "world",
+      config: false,
+      type: String,
+      choices: this.ANIMATION_STYLES,
+      default: "dynamic",
+    });
+
+    game.settings.register(this.ID, "dynamicOpacity", {
+      name: "Dynamic Opacity",
+      hint: "Scale opacity with health",
+      scope: "world",
+      config: false,
+      type: Boolean,
+      default: false,
+    });
+
+    game.settings.register(this.ID, "flickerIntensity", {
+      name: "Flicker Intensity",
+      scope: "world",
+      config: false,
+      type: Number,
+      range: {
+        min: 1,
+        max: 5,
+        step: 1,
+      },
+      default: 3,
+    });
   }
 
   static hookTokenUpdates() {
@@ -492,152 +518,190 @@ static getGradientColor(healthPercentage, thresholds) {
     }
   }
 
+  
   static getAuraUpdates(healthPercentage, settings) {
-    console.log(`${this.ID} | Checking health percentage:`, healthPercentage);
-    console.log(`${this.ID} | Available thresholds:`, settings.thresholds);
+const baseAura = {
+    dim: settings.auraType === 'bright' ? 0 : settings.auraDim,
+    bright: settings.auraType === 'dim' ? 0 : settings.auraBright,
+    alpha: settings.dynamicOpacity ? 
+          // Scale from 0.1 up to user's chosen opacity based on health percentage
+          (0.1 + ((settings.auraAlpha - 0.1) * (1 - (healthPercentage / 100)))) : 
+          settings.auraAlpha
+};
 
-    const baseAura = {
-        dim: settings.auraType === 'bright' ? 0 : settings.auraDim,
-        bright: settings.auraType === 'dim' ? 0 : settings.auraBright,
-        alpha: settings.auraAlpha
-    };
-
-    const sortedThresholds = settings.thresholds.sort((a, b) => b.threshold - a.threshold);
-    console.log(`${this.ID} | Sorted thresholds:`, sortedThresholds);
-
-    // Calculate gradient color based on health
+    const sortedThresholds = settings.thresholds.sort(
+      (a, b) => b.threshold - a.threshold
+    );
     const color = this.getGradientColor(healthPercentage, sortedThresholds);
-    console.log(`${this.ID} | Gradient color result:`, color);
 
-    // If no color (above all thresholds), return no aura
     if (!color) {
-        return {
-            light: {
-                dim: 0,
-                bright: 0,
-                color: "",
-                alpha: 0,
-                animation: { type: "none", speed: 0, intensity: 0 }
-            }
-        };
+      return {
+        light: {
+          dim: 0,
+          bright: 0,
+          color: "",
+          alpha: 0,
+          animation: { type: "none" },
+        },
+      };
     }
 
-    // Calculate animation intensity based on health percentage
+    let animation = { type: "none" };
     const healthFactor = Math.min(1, Math.max(0, healthPercentage / 100));
-    const baseIntensity = 5 - (healthFactor * 3);
-    const baseSpeed = 5 - (healthFactor * 3);
+
+    switch (settings.animationStyle) {
+      case "pulse":
+        animation = {
+          type: "pulse",
+          speed: 3,
+          intensity: 3,
+        };
+        break;
+      case "flicker":
+        animation = {
+          type: "torch",
+          speed: 2,
+          intensity: settings.flickerIntensity,
+        };
+        break;
+      case "dynamic":
+        if (healthPercentage <= 25) {
+          animation = {
+            type: "torch",
+            speed: 5,
+            intensity: 5,
+          };
+        } else if (healthPercentage <= 50) {
+          animation = {
+            type: "pulse",
+            speed: 4,
+            intensity: 4,
+          };
+        } else if (healthPercentage <= 75) {
+          animation = {
+            type: "pulse",
+            speed: 2,
+            intensity: 2,
+          };
+        }
+        break;
+    }
 
     return {
-        light: {
-            ...baseAura,
-            color: color,
-            animation: settings.enablePulse ? {
-                type: "pulse",
-                speed: baseSpeed,
-                intensity: baseIntensity
-            } : { type: "none" }
-        }
+      light: {
+        ...baseAura,
+        color: color,
+        animation: settings.enablePulse ? animation : { type: "none" },
+      },
     };
 
     // Find the appropriate threshold bracket
     let activeThreshold = null;
     for (let i = 0; i < sortedThresholds.length; i++) {
-        const currentThreshold = sortedThresholds[i];
-        const nextThreshold = sortedThresholds[i + 1];
+      const currentThreshold = sortedThresholds[i];
+      const nextThreshold = sortedThresholds[i + 1];
 
-        // If this is the last threshold and we're below it
-        if (!nextThreshold && healthPercentage <= currentThreshold.threshold) {
-            activeThreshold = currentThreshold;
-            break;
-        }
-        
-        // If we're between this threshold and the next one
-        if (nextThreshold && 
-            healthPercentage <= currentThreshold.threshold && 
-            healthPercentage > nextThreshold.threshold) {
-            activeThreshold = currentThreshold;
-            break;
-        }
+      // If this is the last threshold and we're below it
+      if (!nextThreshold && healthPercentage <= currentThreshold.threshold) {
+        activeThreshold = currentThreshold;
+        break;
+      }
+
+      // If we're between this threshold and the next one
+      if (
+        nextThreshold &&
+        healthPercentage <= currentThreshold.threshold &&
+        healthPercentage > nextThreshold.threshold
+      ) {
+        activeThreshold = currentThreshold;
+        break;
+      }
     }
 
-    console.log(`${this.ID} | Matched threshold:`, activeThreshold);
-
     if (activeThreshold) {
-        const thresholdIndex = sortedThresholds.indexOf(activeThreshold);
-        const nextThreshold = sortedThresholds[thresholdIndex + 1];
-        const lowerBound = nextThreshold ? nextThreshold.threshold : 0;
-        const range = activeThreshold.threshold - lowerBound;
-        const healthIntoThreshold = healthPercentage - lowerBound;
-        const percentIntoThreshold = range ? (healthIntoThreshold / range) : 0;
+      const thresholdIndex = sortedThresholds.indexOf(activeThreshold);
+      const nextThreshold = sortedThresholds[thresholdIndex + 1];
+      const lowerBound = nextThreshold ? nextThreshold.threshold : 0;
+      const range = activeThreshold.threshold - lowerBound;
+      const healthIntoThreshold = healthPercentage - lowerBound;
+      const percentIntoThreshold = range ? healthIntoThreshold / range : 0;
 
-        const baseIntensity = 5 - (percentIntoThreshold * 2);
-        const baseSpeed = 5 - (percentIntoThreshold * 2);
+      const baseIntensity = 5 - percentIntoThreshold * 2;
+      const baseSpeed = 5 - percentIntoThreshold * 2;
 
-        return {
-            light: {
-                ...baseAura,
-                color: activeThreshold.color,
-                animation: settings.enablePulse ? {
-                    type: "pulse",
-                    speed: baseSpeed,
-                    intensity: baseIntensity
-                } : { type: "none" }
-            }
-        };
+      return {
+        light: {
+          ...baseAura,
+          color: activeThreshold.color,
+          animation: settings.enablePulse
+            ? {
+                type: "pulse",
+                speed: baseSpeed,
+                intensity: baseIntensity,
+              }
+            : { type: "none" },
+        },
+      };
     }
 
     return {
-        light: {
-            dim: 0,
-            bright: 0,
-            color: "",
-            alpha: 0,
-            animation: { type: "none", speed: 0, intensity: 0 }
-        }
+      light: {
+        dim: 0,
+        bright: 0,
+        color: "",
+        alpha: 0,
+        animation: { type: "none", speed: 0, intensity: 0 },
+      },
     };
-}
+  }
 
   static updateTokenAura(tokenDocument) {
     try {
-        if (!tokenDocument) return;
-        
-        const actor = tokenDocument.actor;
-        if (!actor) return;
+      if (!tokenDocument) return;
 
-        // Only check global disable and per-token disable
-        const globallyDisabled = game.settings.get(this.ID, 'globallyDisabled');
-        const isDisabled = tokenDocument.getFlag(this.ID, this.FLAGS.DISABLE_AURA);
+      const actor = tokenDocument.actor;
+      if (!actor) return;
 
-        if (globallyDisabled || isDisabled) {
-            return this.removeAura(tokenDocument);
-        }
+      // Only check global disable and per-token disable
+      const globallyDisabled = game.settings.get(this.ID, "globallyDisabled");
+      const isDisabled = tokenDocument.getFlag(
+        this.ID,
+        this.FLAGS.DISABLE_AURA
+      );
 
-        // Only GMs should update token data to avoid permission errors
-        if (!game.user.isGM) return;
+      if (globallyDisabled || isDisabled) {
+        return this.removeAura(tokenDocument);
+      }
 
-        const healthData = this.getHealthData(actor);
-        if (!healthData) return;
+      // Only GMs should update token data to avoid permission errors
+      if (!game.user.isGM) return;
 
-        const healthPercentage = (healthData.current / healthData.max) * 100;
-        
-        const settings = {
-            auraType: game.settings.get(this.ID, 'auraType'),
-            thresholds: game.settings.get(this.ID, 'thresholds'),
-            auraAlpha: game.settings.get(this.ID, 'auraAlpha'),
-            auraDim: game.settings.get(this.ID, 'auraDim'),
-            auraBright: game.settings.get(this.ID, 'auraBright'),
-            enablePulse: game.settings.get(this.ID, 'enablePulse')
-        };
+      const healthData = this.getHealthData(actor);
+      if (!healthData) return;
 
-        const updates = this.getAuraUpdates(healthPercentage, settings);
-        
-        return tokenDocument.update(updates).catch(err => {
-            console.error(`${this.ID} | Error updating token aura:`, err);
-        });
-    } catch(err) {
-        console.error(`${this.ID} | Error in updateTokenAura:`, err);
+      const healthPercentage = (healthData.current / healthData.max) * 100;
+
+      const settings = {
+        auraType: game.settings.get(this.ID, "auraType"),
+        thresholds: game.settings.get(this.ID, "thresholds"),
+        auraAlpha: game.settings.get(this.ID, "auraAlpha"),
+        auraDim: game.settings.get(this.ID, "auraDim"),
+        auraBright: game.settings.get(this.ID, "auraBright"),
+        enablePulse: game.settings.get(this.ID, "enablePulse"),
+        animationStyle: game.settings.get(this.ID, "animationStyle"),
+        dynamicOpacity: game.settings.get(this.ID, "dynamicOpacity"),
+        flickerIntensity: game.settings.get(this.ID, "flickerIntensity"),
+      };
+
+      const updates = this.getAuraUpdates(healthPercentage, settings);
+
+      return tokenDocument.update(updates).catch((err) => {
+        console.error(`${this.ID} | Error updating token aura:`, err);
+      });
+    } catch (err) {
+      console.error(`${this.ID} | Error in updateTokenAura:`, err);
     }
-}
+  }
 
   static API = {
     updateAura: (token) => {
@@ -670,7 +734,6 @@ static getGradientColor(healthPercentage, thresholds) {
     });
   }
 }
-
 
 // Initialize the module
 Hooks.once("init", () => {
