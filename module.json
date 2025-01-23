@@ -26,12 +26,14 @@
         "path": "languages/en.json"
       }
     ],
-  "description": "Tokens life will be dictate an aura around them, based on user configured thresholds!",
+  "description": "Tokens life will be dictate an aura around them, based on user configured thresholds,  dynamic opacity options, and other options.",
   "authors": [
     {
       "name": "ieru00",
       "flags": {}
     }
-  ]
-  
+  ],
+  "url": "https://github.com/ieru00/fdr-token-hp-aura/",
+  "download": "https://github.com/ieru00/fdr-token-hp-aura/raw/refs/heads/main/zipped/TokenHpAura.zip",
+  "manifest": "https://raw.githubusercontent.com/ieru00/fdr-token-hp-aura/main/module.json"
 }
