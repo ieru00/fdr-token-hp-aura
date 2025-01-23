@@ -1,7 +1,7 @@
 {
   "id": "token-health-aura",
   "title": "Token Health Aura",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": {
     "minimum": "12",
     "verified": "12",
@@ -26,12 +26,18 @@
         "path": "languages/en.json"
       }
     ],
+<<<<<<< HEAD
+  "description": "Tokens life will be dictate an aura around them, based on user configured thresholds,  dynamic opacity options, and other options.",
+=======
   "description": "Module that will place a small aura around tokens at varying thresholds of HP.",
+>>>>>>> main
   "authors": [
     {
       "name": "ieru00",
       "flags": {}
     }
-  ]
-  
+  ],
+  "url": "https://github.com/ieru00/fdr-token-hp-aura/",
+  "download": "https://github.com/ieru00/fdr-token-hp-aura/raw/refs/heads/main/zipped/TokenHpAura.zip",
+  "manifest": "https://raw.githubusercontent.com/ieru00/fdr-token-hp-aura/main/module.json"
 }

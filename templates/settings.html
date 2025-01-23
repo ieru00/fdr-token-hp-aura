@@ -61,17 +61,51 @@
     </div>
 
     <div class="form-group">
-        <label>Enable Pulse Animation</label>
+        <label>Enable Animation</label>
         <div class="form-fields">
             <input type="checkbox" name="enablePulse" {{#if settings.enablePulse}}checked{{/if}}>
         </div>
     </div>
 
     <div class="form-group">
+        <label>Animation Style</label>
+        <select name="animationStyle">
+            {{#select settings.animationStyle}}
+            {{#each animationStyles}}
+            <option value="{{@key}}">{{this}}</option>
+            {{/each}}
+            {{/select}}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Dynamic Opacity</label>
+        <div class="form-fields">
+            <input type="checkbox" name="dynamicOpacity" {{#if settings.dynamicOpacity}}checked{{/if}}>
+        </div>
+        <p class="notes">Aura becomes more transparent at higher health, uses Aura Opacity setting for maximum opacity</p>
+    </div>
+
+    <div class="form-group" data-animation="flicker">
+        <label>Flicker Intensity</label>
+        <div class="form-fields">
+            <input type="range" name="flickerIntensity" value="{{settings.flickerIntensity}}" min="1" max="5" step="1">
+            <span class="range-value">{{settings.flickerIntensity}}</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <p class="notes">Hot key to toggle auras globally is CTRL + ] </p>
         <button type="submit">
             <i class="far fa-save"></i> Save Settings
         </button>
     </div>
+<<<<<<< HEAD
+
+
+
+=======
+>>>>>>> main
 </form>
 
 <style>
