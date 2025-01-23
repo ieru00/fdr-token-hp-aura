@@ -26,11 +26,7 @@
         "path": "languages/en.json"
       }
     ],
-<<<<<<< HEAD
   "description": "Tokens life will be dictate an aura around them, based on user configured thresholds,  dynamic opacity options, and other options.",
-=======
-  "description": "Module that will place a small aura around tokens at varying thresholds of HP.",
->>>>>>> main
   "authors": [
     {
       "name": "ieru00",
