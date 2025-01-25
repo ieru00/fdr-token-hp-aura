@@ -3,7 +3,7 @@
   "title": "Token Health Aura",
   "version": "1.1.0",
   "compatibility": {
-    "minimum": "12",
+    "minimum": "11",
     "verified": "12",
     "maximum": "12"
   },
